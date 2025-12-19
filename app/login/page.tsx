@@ -7,15 +7,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
-  const sendLink = async () => {
-    const supabase = supabaseBrowser()
-    await supabase.auth.signInWithOtp({
+  const handleLogin = async () => {
+    const { error } = await supabaseBrowser.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${location.origin}/api/auth/callback`,
-      },
+        emailRedirectTo: 'https://dokabio.com/api/auth/callback'
+      }
     })
-    setSent(true)
+
+    if (!error) setSent(true)
   }
 
   return (
@@ -23,16 +23,16 @@ export default function LoginPage() {
       <h1>Giriş Yap</h1>
 
       {sent ? (
-        <p>📩 Mail gönderildi</p>
+        <p>Mail gönderildi. Linke tıkla.</p>
       ) : (
         <>
           <input
+            type="email"
+            placeholder="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="email"
           />
-          <br />
-          <button onClick={sendLink}>Link Gönder</button>
+          <button onClick={handleLogin}>Link Gönder</button>
         </>
       )}
     </div>
