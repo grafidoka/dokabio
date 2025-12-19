@@ -1,3 +1,7 @@
-<form method="post" action="/api/auth/logout">
-  <button type="submit">Çıkış Yap</button>
-</form>
+export default function DashboardPage() {
+  return (
+    <main style={{ padding: 24 }}>
+      <h1>Dashboard</h1>
+    </main>
+  )
+}
