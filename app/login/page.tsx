@@ -5,39 +5,72 @@ import { createSupabaseBrowser } from '@/lib/supabase/browser'
 
 export default function LoginPage() {
   const supabase = createSupabaseBrowser()
+
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
-  async function handleLogin() {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
+    setMessage(null)
 
-    await supabase.auth.signInWithOtp({
+    const redirectUrl =
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3000/auth/callback'
+        : 'https://dokabio.com/auth/callback'
+
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: 'https://dokabio.com/api/auth/callback',
+        emailRedirectTo: redirectUrl,
       },
     })
 
+    if (error) {
+      console.error(error)
+      setMessage('Bir hata oluştu. Lütfen tekrar dene.')
+    } else {
+      setMessage('Giriş linki mail adresine gönderildi.')
+    }
+
     setLoading(false)
-    alert('Mail gönderildi')
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Giriş Yap</h1>
+    <main
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <form
+        onSubmit={handleLogin}
+        style={{
+          width: 320,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}
+      >
+        <h1>Giriş Yap</h1>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <input
+          type="email"
+          placeholder="E-posta adresin"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-      <br /><br />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Gönderiliyor…' : 'Magic Link Gönder'}
+        </button>
 
-      <button onClick={handleLogin} disabled={loading}>
-        Link Gönder
-      </button>
-    </div>
+        {message && <p>{message}</p>}
+      </form>
+    </main>
   )
 }
