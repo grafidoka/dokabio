@@ -3,11 +3,11 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   const cookieStore = await cookies()
@@ -32,9 +32,9 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
-    console.error('AUTH CALLBACK ERROR:', error.message)
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return NextResponse.redirect(`${origin}/dashboard`)
+  // ✅ İŞTE REDIRECT BURADA
+  return NextResponse.redirect(new URL('/dashboard/links', request.url))
 }
