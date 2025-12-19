@@ -9,16 +9,22 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default function DashboardLinksPage() {
+export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+
+      if (data.session) {
+        router.replace('/dashboard/links')
+      } else {
         router.replace('/login')
       }
-    })
+    }
+
+    checkSession()
   }, [router])
 
-  return <h1>Dashboard</h1>
+  return <p>Giriş yapılıyor…</p>
 }
