@@ -1,55 +1,45 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 
 type Link = {
   id: string
   title: string
   url: string
-  order_index: number
+  position: number
 }
 
 export default function DashboardLinksPage() {
-  const router = useRouter()
   const supabase = supabaseBrowser()
 
   const [links, setLinks] = useState<Link[]>([])
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // 🔒 AUTH KONTROL + LİNKLERİ ÇEK
+  // 🔹 Linkleri çek
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.replace('/login')
-        return
-      }
-
+    const loadLinks = async () => {
       const { data, error } = await supabase
         .from('links')
-        .select('id, title, url, order_index')
-        .order('order_index', { ascending: true })
+        .select('id, title, url, position')
+        .eq('is_active', true)
+        .order('position', { ascending: true })
 
       if (!error && data) {
         setLinks(data)
       }
+
+      setLoading(false)
     }
 
-    init()
-  }, [router, supabase])
+    loadLinks()
+  }, [])
 
-  // ➕ LINK EKLE
+  // 🔹 Yeni link ekle
   const addLink = async () => {
     if (!title || !url) return
-
-    setLoading(true)
 
     const { error } = await supabase.from('links').insert({
       title,
@@ -60,21 +50,23 @@ export default function DashboardLinksPage() {
       setTitle('')
       setUrl('')
 
+      // yeniden çek
       const { data } = await supabase
         .from('links')
-        .select('id, title, url, order_index')
-        .order('order_index', { ascending: true })
+        .select('id, title, url, position')
+        .eq('is_active', true)
+        .order('position', { ascending: true })
 
       if (data) setLinks(data)
-    } else {
-      alert(error.message)
     }
+  }
 
-    setLoading(false)
+  if (loading) {
+    return <div style={{ padding: 40 }}>Yükleniyor…</div>
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto' }}>
+    <div style={{ padding: 40, maxWidth: 600 }}>
       <h1>Links</h1>
 
       {/* FORM */}
@@ -89,16 +81,16 @@ export default function DashboardLinksPage() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
-        <button onClick={addLink} disabled={loading}>
-          {loading ? 'Ekleniyor…' : 'Ekle'}
-        </button>
+        <button onClick={addLink}>Ekle</button>
       </div>
 
       {/* LİSTE */}
+      {links.length === 0 && <p>Henüz link yok.</p>}
+
       <ul>
         {links.map((link) => (
           <li key={link.id}>
-            <strong>{link.title}</strong> — {link.url}
+            <strong>{link.title}</strong> – {link.url}
           </li>
         ))}
       </ul>
