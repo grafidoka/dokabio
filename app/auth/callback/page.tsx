@@ -2,29 +2,29 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { supabaseBrowser } from '@/lib/supabase/client'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession()
+    const finishLogin = async () => {
+      const supabase = supabaseBrowser()
 
-      if (data.session) {
-        router.replace('/dashboard/links')
-      } else {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (error || !data.session) {
+        console.error('Session alınamadı', error)
         router.replace('/login')
+        return
       }
+
+      // ✅ Session başarıyla oluştu
+      router.replace('/dashboard/links')
     }
 
-    checkSession()
+    finishLogin()
   }, [router])
 
-  return <p>Giriş yapılıyor…</p>
+  return <p>Giriş yapılıyor...</p>
 }
