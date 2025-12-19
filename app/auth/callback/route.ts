@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { supabaseServer } from '@/lib/supabase/server'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -10,26 +9,11 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  const cookieStore = await cookies()
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: cookies =>
-          cookies.forEach(c =>
-            cookieStore.set(c.name, c.value, c.options)
-          ),
-      },
-    }
-  )
-
+  const supabase = await supabaseServer()
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
-    console.error('Auth error:', error.message)
+    console.error(error)
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
