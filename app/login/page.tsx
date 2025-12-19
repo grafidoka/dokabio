@@ -1,36 +1,56 @@
 'use client'
 
-import { createBrowserClient } from '@supabase/ssr'
 import { useState } from 'react'
+import { supabaseBrowser } from '@/lib/supabase/browser'
 
 export default function LoginPage() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const login = async () => {
-    await supabase.auth.signInWithOtp({
+  const handleLogin = async () => {
+    if (!email) return
+
+    setLoading(true)
+
+    const { error } = await supabaseBrowser.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${location.origin}/api/auth/callback`,
+        emailRedirectTo: 'https://dokabio.com/api/auth/callback',
       },
     })
-    setSent(true)
+
+    setLoading(false)
+
+    if (!error) {
+      setSent(true)
+    } else {
+      alert(error.message)
+    }
   }
 
   return (
-    <div>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="email"
-      />
-      <button onClick={login}>Giriş</button>
-      {sent && <p>Mail gönderildi</p>}
+    <div style={{ padding: 40 }}>
+      <h1>Giriş Yap</h1>
+
+      {sent ? (
+        <p>Mail gönderildi. Linke tıkla.</p>
+      ) : (
+        <>
+          <input
+            type="email"
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <br /><br />
+
+          <button onClick={handleLogin} disabled={loading}>
+            {loading ? 'Gönderiliyor…' : 'Link Gönder'}
+          </button>
+        </>
+      )}
     </div>
   )
 }
