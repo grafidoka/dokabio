@@ -6,35 +6,39 @@ import { createSupabaseBrowser } from '@/lib/supabase/browser'
 export default function LoginPage() {
   const supabase = createSupabaseBrowser()
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  async function sendLink() {
+  async function handleLogin() {
+    setLoading(true)
+
     await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${location.origin}/api/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
       },
     })
 
-    setSent(true)
+    setLoading(false)
+    alert('Mail gönderildi')
   }
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 24 }}>
       <h1>Giriş Yap</h1>
 
-      {sent ? (
-        <p>Mail gönderildi.</p>
-      ) : (
-        <>
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button onClick={sendLink}>Link Gönder</button>
-        </>
-      )}
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <br />
+      <br />
+
+      <button onClick={handleLogin} disabled={loading}>
+        Link Gönder
+      </button>
     </div>
   )
 }
