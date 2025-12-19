@@ -1,41 +1,46 @@
 'use client'
 
 import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createClient } from '@/lib/supabase/browser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
 
-  const handleLogin = async () => {
-    setLoading(true)
+  async function handleLogin() {
+    const supabase = createClient()
 
-    await supabaseBrowser().auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${location.origin}/api/auth/callback`,
       },
     })
 
-    setLoading(false)
-    alert('Mail gönderildi')
+    if (!error) {
+      setSent(true)
+    } else {
+      alert(error.message)
+    }
   }
 
   return (
     <div style={{ padding: 40 }}>
       <h1>Giriş Yap</h1>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ display: 'block', marginBottom: 10 }}
-      />
-
-      <button onClick={handleLogin} disabled={loading}>
-        {loading ? 'Gönderiliyor...' : 'Link Gönder'}
-      </button>
+      {sent ? (
+        <p>Mail gönderildi. Maildeki linke tıkla.</p>
+      ) : (
+        <>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <br />
+          <button onClick={handleLogin}>Link Gönder</button>
+        </>
+      )}
     </div>
   )
 }
