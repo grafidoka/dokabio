@@ -5,6 +5,7 @@ import { createBrowserClient } from "@supabase/ssr";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -23,9 +24,9 @@ export default function LoginPage() {
     <div>
       <h1>Giriş Yap</h1>
       <input
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
       />
       <button onClick={handleLogin}>Link Gönder</button>
     </div>
