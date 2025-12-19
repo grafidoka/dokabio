@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardUsernamePage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const {
     data: { user },
@@ -14,8 +16,8 @@ export default async function DashboardUsernamePage() {
 
   return (
     <div style={{ maxWidth: 600, margin: '40px auto' }}>
-      <h1>Kullanıcı Sayfası</h1>
-      <p>Giriş yapan kullanıcı: {user.email}</p>
+      <h1>Username Dashboard</h1>
+      <p>{user.email}</p>
     </div>
   )
 }
