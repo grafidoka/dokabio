@@ -8,15 +8,17 @@ export default async function DashboardLinksPage() {
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (error || !user) {
+    redirect('/login')
+  }
 
   return (
-    <div style={{ padding: 40 }}>
+    <main style={{ padding: 40 }}>
       <h1>Dashboard</h1>
       <p>{user.email}</p>
-      <a href="/logout">Çıkış Yap</a>
-    </div>
+    </main>
   )
 }
