@@ -9,9 +9,7 @@ export function createServerClient() {
         getAll() {
           return []
         },
-        setAll() {
-          // server component'te cookie yazılmaz
-        },
+        setAll() {},
       },
     }
   )

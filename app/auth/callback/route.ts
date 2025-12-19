@@ -10,7 +10,6 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // 🔴 KRİTİK: cookies() await EDİLİR
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -33,10 +32,8 @@ export async function GET(req: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
-    console.error('Auth error:', error.message)
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // ✅ BAŞARILI LOGIN
   return NextResponse.redirect(new URL('/dashboard/links', req.url))
 }

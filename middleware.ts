@@ -25,7 +25,6 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 🔑 BU SATIR ÇOK ÖNEMLİ
   await supabase.auth.getSession()
 
   return response
@@ -33,9 +32,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Auth callback ve static'leri HARİÇ tut
-     */
-    '/((?!_next/static|_next/image|favicon.ico|auth/callback).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

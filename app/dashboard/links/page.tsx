@@ -12,22 +12,10 @@ export default async function DashboardLinksPage() {
     redirect('/login')
   }
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('*')
-    .order('position', { ascending: true })
-
   return (
     <div style={{ maxWidth: 600, margin: '40px auto' }}>
-      <h1>Linklerim</h1>
-
-      <ul>
-        {links?.map(link => (
-          <li key={link.id}>
-            <strong>{link.title}</strong> – {link.url}
-          </li>
-        ))}
-      </ul>
+      <h1>Dashboard</h1>
+      <p>Hoş geldin: {user.email}</p>
     </div>
   )
 }
