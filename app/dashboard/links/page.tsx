@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { getSupabaseServer } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardLinksPage() {
-  const supabase = await createServerClient()
+  const supabase = await getSupabaseServer()
 
   const {
     data: { user },
@@ -13,7 +15,7 @@ export default async function DashboardLinksPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto' }}>
+    <div>
       <h1>Dashboard</h1>
       <p>{user.email}</p>
     </div>
