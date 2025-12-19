@@ -1,36 +1,38 @@
+// app/login/page.tsx
 'use client'
 
 import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase/client'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
-  const sendLink = async () => {
-    const supabase = supabaseBrowser()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
-    const { error } = await supabase.auth.signInWithOtp({
+  const sendLink = async () => {
+    await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
+        emailRedirectTo: 'https://dokabio.com/auth/callback',
       },
     })
-
-    if (!error) setSent(true)
+    setSent(true)
   }
 
   return (
-    <div>
+    <div style={{ padding: 32 }}>
       <h1>Giriş</h1>
 
       {sent ? (
-        <p>Mail gönderildi. Linke tıklayın.</p>
+        <p>Mailine giriş linki gönderildi 📩</p>
       ) : (
         <>
           <input
-            type="email"
-            placeholder="Mail adresi"
+            placeholder="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />

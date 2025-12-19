@@ -1,3 +1,4 @@
+// app/auth/callback/page.tsx
 'use client'
 
 import { useEffect } from 'react'
@@ -13,28 +14,10 @@ export default function AuthCallbackPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const finalizeAuth = async () => {
-      // URL'deki code → session'a çevrilir
-      const { data, error } = await supabase.auth.exchangeCodeForSession(
-        window.location.href
-      )
-
-      if (error) {
-        console.error('Auth callback error:', error)
-        router.replace('/login')
-        return
-      }
-
-      // ✅ Session OK → dashboard
+    supabase.auth.getSession().then(() => {
       router.replace('/dashboard/links')
-    }
-
-    finalizeAuth()
+    })
   }, [router])
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h2>Giriş yapılıyor…</h2>
-    </div>
-  )
+  return <p>Giriş yapılıyor…</p>
 }

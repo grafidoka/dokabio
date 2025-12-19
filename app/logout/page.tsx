@@ -1,17 +1,20 @@
-'use client'
+// app/dashboard/layout.tsx
+import { redirect } from 'next/navigation'
+import { supabaseServer } from '@/lib/supabase/server'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+export const dynamic = 'force-dynamic'
 
-export default function LogoutPage() {
-  const router = useRouter()
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const supabase = await supabaseServer()
+  const { data } = await supabase.auth.getUser()
 
-  useEffect(() => {
-    supabaseBrowser.auth.signOut().then(() => {
-      router.replace('/login')
-    })
-  }, [router])
+  if (!data.user) {
+    redirect('/login')
+  }
 
-  return <p>Çıkış yapılıyor…</p>
+  return <>{children}</>
 }

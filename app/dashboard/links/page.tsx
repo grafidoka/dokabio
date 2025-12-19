@@ -1,18 +1,11 @@
-import { redirect } from 'next/navigation'
-import { supabaseServer } from '@/lib/supabase/server'
+// app/dashboard/links/page.tsx
+export const dynamic = 'force-dynamic'
 
-export default async function DashboardLinksPage() {
-  const supabase = await supabaseServer()
-  const { data } = await supabase.auth.getUser()
-
-  if (!data.user) {
-    redirect('/login')
-  }
-
+export default function DashboardLinksPage() {
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>{data.user.email}</p>
+    <div style={{ padding: 32 }}>
+      <h1>Dashboard / Links</h1>
+      <p>Giriş başarılı 🎉</p>
     </div>
   )
 }
