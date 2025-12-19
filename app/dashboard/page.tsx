@@ -1,35 +1,18 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation'
+import { createSupabaseServer } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
+  const supabase = await createSupabaseServer()
+  const { data } = await supabase.auth.getUser()
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options });
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  if (!data.user) {
+    redirect('/login')
   }
 
-  return <div>Dashboard</div>;
+  return (
+    <div style={{ padding: 40 }}>
+      <h1>Dashboard</h1>
+      <p>Hoş geldin {data.user.email}</p>
+    </div>
+  )
 }
