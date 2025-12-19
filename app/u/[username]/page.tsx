@@ -1,28 +1,38 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
-type Props = {
-  params: Promise<{ username: string }>
-}
-
-export default async function PublicProfile({ params }: Props) {
-  const { username } = await params
+export default async function PublicProfilePage({ params }: any) {
   const supabase = await createSupabaseServer()
 
-  const { data, error } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
-    .eq('username', username)
+    .select('id, username, display_name, bio')
+    .eq('username', params.username)
     .single()
 
-  if (!data || error) {
-    notFound()
-  }
+  if (!profile) notFound()
+
+  const { data: links } = await supabase
+    .from('links')
+    .select('*')
+    .eq('user_id', profile.id)
+    .eq('is_active', true)
+    .order('position')
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>@{data.username}</h1>
-      <p>{data.bio}</p>
-    </div>
+    <main style={{ padding: 40 }}>
+      <h1>{profile.display_name || profile.username}</h1>
+      <p>{profile.bio}</p>
+
+      <ul>
+        {links?.map(link => (
+          <li key={link.id}>
+            <a href={link.url} target="_blank">
+              {link.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </main>
   )
 }
