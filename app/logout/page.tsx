@@ -13,5 +13,5 @@ export default function LogoutPage() {
     })
   }, [router])
 
-  return null
+  return <p>Çıkış yapılıyor…</p>
 }

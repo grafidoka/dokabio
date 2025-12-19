@@ -8,15 +8,19 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [checking, setChecking] = useState(true)
 
-  // Login olmuşsa login sayfasında tutma
   useEffect(() => {
     supabaseBrowser.auth.getSession().then(({ data }) => {
       if (data.session) {
         router.replace('/dashboard/links')
+      } else {
+        setChecking(false)
       }
     })
   }, [router])
+
+  if (checking) return null // flash engelle
 
   const sendMagicLink = async () => {
     if (!email) return
