@@ -2,52 +2,26 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { supabaseBrowser } from '@/lib/supabase/browser'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
-  // 🔑 MAGIC LINK SONRASI HASH'I TEMİZLE + SESSION KONTROL
+  // Login olmuşsa login sayfasında tutma
   useEffect(() => {
-    const handleAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (session) {
-        // HASH (#) TEMİZLENİR
-        window.history.replaceState(null, '', '/dashboard/links')
-        router.replace('/dashboard/links')
-      }
-    }
-
-    handleAuth()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        window.history.replaceState(null, '', '/dashboard/links')
+    supabaseBrowser.auth.getSession().then(({ data }) => {
+      if (data.session) {
         router.replace('/dashboard/links')
       }
     })
-
-    return () => {
-      subscription.unsubscribe()
-    }
   }, [router])
 
   const sendMagicLink = async () => {
     if (!email) return
 
-    await supabase.auth.signInWithOtp({
+    await supabaseBrowser.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${location.origin}/auth/callback`,
@@ -58,8 +32,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: '80px auto' }}>
-      <h1>Login</h1>
+    <div style={{ maxWidth: 400, margin: '80px auto' }}>
+      <h1>Giriş Yap</h1>
 
       {sent ? (
         <p>Mailini kontrol et.</p>
