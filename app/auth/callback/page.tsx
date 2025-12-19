@@ -1,30 +1,63 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
 
-export default function AuthCallbackPage() {
-  const router = useRouter()
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export default function DebugAuthPage() {
+  const [log, setLog] = useState<any>({})
 
   useEffect(() => {
-    const finishLogin = async () => {
-      const supabase = supabaseBrowser()
+    const run = async () => {
+      const result: any = {}
 
-      const { data, error } = await supabase.auth.getSession()
+      // 1️⃣ URL bilgisi
+      result.url = window.location.href
+      result.hash = window.location.hash
 
-      if (error || !data.session) {
-        console.error('Session alınamadı', error)
-        router.replace('/login')
-        return
+      // 2️⃣ Session kontrolü
+      const sessionRes = await supabase.auth.getSession()
+      result.session = sessionRes
+
+      // 3️⃣ User kontrolü
+      const userRes = await supabase.auth.getUser()
+      result.user = userRes
+
+      // 4️⃣ LocalStorage
+      const ls: any = {}
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key) ls[key] = localStorage.getItem(key)
       }
+      result.localStorage = ls
 
-      // ✅ Session başarıyla oluştu
-      router.replace('/dashboard/links')
+      // 5️⃣ Cookies
+      result.cookies = document.cookie
+
+      setLog(result)
     }
 
-    finishLogin()
-  }, [router])
+    run()
+  }, [])
 
-  return <p>Giriş yapılıyor...</p>
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>AUTH DEBUG</h1>
+      <pre
+        style={{
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-all',
+          background: '#111',
+          color: '#0f0',
+          padding: 16,
+        }}
+      >
+        {JSON.stringify(log, null, 2)}
+      </pre>
+    </div>
+  )
 }
