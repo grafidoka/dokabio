@@ -14,7 +14,7 @@ export default function LoginPage() {
     await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+        emailRedirectTo: 'https://dokabio.com/api/auth/callback',
       },
     })
 
@@ -33,8 +33,7 @@ export default function LoginPage() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <br />
-      <br />
+      <br /><br />
 
       <button onClick={handleLogin} disabled={loading}>
         Link Gönder
