@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
-  const sendMagicLink = async () => {
+  const sendLink = async () => {
     if (!email) return
 
     await supabaseBrowser.auth.signInWithOtp({
@@ -21,20 +21,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: '80px auto' }}>
-      <h1>Giriş Yap</h1>
+    <div style={{ maxWidth: 400, margin: '80px auto' }}>
+      <h1>Login</h1>
 
       {sent ? (
-        <p>Mailini kontrol et.</p>
+        <p>Mail gönderildi.</p>
       ) : (
         <>
           <input
             type="email"
-            placeholder="Mail adresin"
+            placeholder="E-posta"
             value={email}
             onChange={e => setEmail(e.target.value)}
           />
-          <button onClick={sendMagicLink}>Magic Link Gönder</button>
+          <button onClick={sendLink}>Magic Link Gönder</button>
         </>
       )}
     </div>
