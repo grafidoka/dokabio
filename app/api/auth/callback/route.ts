@@ -9,7 +9,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  // 🔴 EN KRİTİK SATIR
   const supabase = await createSupabaseServer()
 
   const { error } = await supabase.auth.exchangeCodeForSession(code)
