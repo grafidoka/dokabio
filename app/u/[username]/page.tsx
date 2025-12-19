@@ -1,59 +1,28 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
-type Link = {
-  id: string
-  title: string
-  url: string
+type Props = {
+  params: Promise<{ username: string }>
 }
 
-function normalizeUrl(url: string) {
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  return `https://${url}`
-}
-
-export default async function UserPage({
-  params,
-}: {
-  params: { username: string }
-}) {
+export default async function PublicProfile({ params }: Props) {
+  const { username } = await params
   const supabase = await createSupabaseServer()
 
-  const { data: user } = await supabase
-    .from('users')
-    .select('id, username')
-    .eq('username', params.username)
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', username)
     .single()
 
-  if (!user) {
+  if (!data || error) {
     notFound()
   }
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('id, title, url')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-
   return (
-    <main style={{ padding: 24 }}>
-      <h1>@{user.username}</h1>
-
-      <ul>
-        {links?.map((link: Link) => (
-          <li key={link.id}>
-            <a
-              href={normalizeUrl(link.url)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {link.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div style={{ padding: 40 }}>
+      <h1>@{data.username}</h1>
+      <p>{data.bio}</p>
+    </div>
   )
 }

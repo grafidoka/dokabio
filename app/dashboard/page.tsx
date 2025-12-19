@@ -9,5 +9,5 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  return <div>Dashboard</div>
+  return <h1>Dashboard</h1>
 }
