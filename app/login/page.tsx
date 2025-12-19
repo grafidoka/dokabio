@@ -1,46 +1,30 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/browser'
+import { createSupabaseBrowser } from '@/lib/supabase/browser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const supabase = createSupabaseBrowser()
 
-  async function handleLogin() {
-    const supabase = createClient()
-
-    const { error } = await supabase.auth.signInWithOtp({
+  const sendLink = async () => {
+    await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${location.origin}/api/auth/callback`,
       },
     })
-
-    if (!error) {
-      setSent(true)
-    } else {
-      alert(error.message)
-    }
   }
 
   return (
-    <div style={{ padding: 40 }}>
+    <div>
       <h1>Giriş Yap</h1>
-
-      {sent ? (
-        <p>Mail gönderildi. Maildeki linke tıkla.</p>
-      ) : (
-        <>
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <br />
-          <button onClick={handleLogin}>Link Gönder</button>
-        </>
-      )}
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button onClick={sendLink}>Link Gönder</button>
     </div>
   )
 }

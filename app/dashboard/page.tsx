@@ -9,10 +9,5 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h1>Dashboard</h1>
-      <p>Hoş geldin {data.user.email}</p>
-    </div>
-  )
+  return <div>Dashboard</div>
 }
