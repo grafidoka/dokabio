@@ -10,3 +10,11 @@ export async function POST() {
     { status: 302 }
   )
 }
+
+// 👇 SADECE tarayıcıdan girilirse
+export async function GET() {
+  return NextResponse.redirect(
+    new URL('/login', process.env.NEXT_PUBLIC_SITE_URL),
+    { status: 302 }
+  )
+}
