@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  const supabase = await supabaseServer()
+  const supabase = await supabaseServer() // 🔴 await EKLENDİ
   await supabase.auth.exchangeCodeForSession(code)
 
   return NextResponse.redirect(`${origin}/dashboard`)
