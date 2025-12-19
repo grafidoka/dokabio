@@ -11,7 +11,7 @@ export async function POST() {
   )
 }
 
-// 👇 SADECE tarayıcıdan girilirse
+// 🔥 BU YOKSA 500/505 GÖRÜRSÜN
 export async function GET() {
   return NextResponse.redirect(
     new URL('/login', process.env.NEXT_PUBLIC_SITE_URL),
