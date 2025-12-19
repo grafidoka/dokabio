@@ -1,20 +1,21 @@
-import { supabaseServer } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { createServerClient } from '@/lib/supabase/server'
 
 export default async function DashboardUsernamePage() {
-  const supabase = await supabaseServer()
+  const supabase = createServerClient()
 
   const {
-    data: { user }
+    data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return <p>Yetkisiz</p>
+    redirect('/login')
   }
 
   return (
-    <div>
-      <h1>Kullanıcı Adı</h1>
-      <p>{user.user_metadata.username}</p>
+    <div style={{ maxWidth: 600, margin: '40px auto' }}>
+      <h1>Kullanıcı Sayfası</h1>
+      <p>Giriş yapan kullanıcı: {user.email}</p>
     </div>
   )
 }
