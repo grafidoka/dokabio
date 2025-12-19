@@ -1,19 +1,20 @@
-'use client'
+import { supabaseServer } from '@/lib/supabase/server'
 
-import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+export default async function DashboardUsernamePage() {
+  const supabase = await supabaseServer()
 
-export default function UsernamePage() {
-  const supabase = supabaseBrowser()
-  const [username, setUsername] = useState('')
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return <p>Yetkisiz</p>
+  }
 
   return (
     <div>
-      <h1>Username</h1>
-      <input
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+      <h1>Kullanıcı Adı</h1>
+      <p>{user.user_metadata.username}</p>
     </div>
   )
 }
