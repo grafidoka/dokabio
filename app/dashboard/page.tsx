@@ -1,57 +1,35 @@
-import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-  const supabase = await createSupabaseServerClient()
+  const cookieStore = await cookies();
 
-  // 1️⃣ Session kontrolü
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
+
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
-    redirect('/login')
+  if (!user) {
+    redirect("/login");
   }
 
-  const user = session.user
-
-  // 2️⃣ Profili dene oku
-  let { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  // 3️⃣ Yoksa oluştur
-  if (!profile) {
-    await supabase.from('profiles').insert({
-      id: user.id,
-      username: user.email!.split('@')[0],
-    })
-
-    // 4️⃣ Tekrar oku (KESİN)
-    const result = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    profile = result.data
-  }
-
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>Dashboard</h1>
-
-      <p>Giriş başarılı 🎉</p>
-      <p>Email: {user.email}</p>
-
-      <hr style={{ margin: '24px 0' }} />
-
-      <h2>Profil</h2>
-      <p>
-        <strong>Username:</strong> {profile.username}
-      </p>
-    </main>
-  )
+  return <div>Dashboard</div>;
 }
