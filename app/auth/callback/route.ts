@@ -1,21 +1,38 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const code = searchParams.get('code')
+  const url = new URL(req.url)
+  const code = url.searchParams.get('code')
 
   if (!code) {
-    return NextResponse.redirect(new URL('/login', req.url))
+    return NextResponse.redirect(new URL('/login', url))
   }
 
-  const supabase = await supabaseServer()
+  const cookieStore = await cookies()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: cookiesToSet => {
+          cookiesToSet.forEach(c =>
+            cookieStore.set(c.name, c.value, c.options)
+          )
+        },
+      },
+    }
+  )
+
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
     console.error(error)
-    return NextResponse.redirect(new URL('/login', req.url))
+    return NextResponse.redirect(new URL('/login', url))
   }
 
-  return NextResponse.redirect(new URL('/dashboard/links', req.url))
+  return NextResponse.redirect(new URL('/dashboard/links', url))
 }
