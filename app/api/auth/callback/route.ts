@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  // 🔴 Next.js 16 → cookies() ASYNC
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -37,6 +36,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  // ✅ COOKIE SERVER TARAFINDA SET EDİLDİ
+  // 🔥 ARTIK SERVER COOKIE VAR
   return NextResponse.redirect(`${origin}/dashboard/links`)
 }
