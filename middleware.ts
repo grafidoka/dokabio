@@ -1,15 +1,27 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const response = NextResponse.next()
 
-  // Sadece dashboard korunsun
-  if (!pathname.startsWith('/dashboard')) {
-    return NextResponse.next()
+  // ❗ Bu path'ler middleware tarafından ASLA engellenmez
+  const publicPaths = [
+    '/login',
+    '/auth',
+    '/auth/callback',
+    '/api',
+    '/'
+  ]
+
+  if (publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))) {
+    return response
   }
 
-  const response = NextResponse.next()
+  // ❗ SADECE dashboard korumalı
+  if (!request.nextUrl.pathname.startsWith('/dashboard')) {
+    return response
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,8 +31,8 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
           })
         },
@@ -28,17 +40,12 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
 
-  // ❌ Giriş yok → login
-  if (!user) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+  if (!data.user) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // ✅ Giriş var → devam
   return response
 }
 
