@@ -3,11 +3,11 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const code = searchParams.get('code')
+  const url = new URL(request.url)
+  const code = url.searchParams.get('code')
 
   if (!code) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/login', url.origin))
   }
 
   const cookieStore = await cookies()
@@ -17,24 +17,16 @@ export async function GET(request: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options)
-          })
-        },
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookies) =>
+          cookies.forEach((c) =>
+            cookieStore.set(c.name, c.value, c.options)
+          ),
       },
     }
   )
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
+  await supabase.auth.exchangeCodeForSession(code)
 
-  if (error) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // ✅ İŞTE REDIRECT BURADA
-  return NextResponse.redirect(new URL('/dashboard/links', request.url))
+  return NextResponse.redirect(new URL('/dashboard/links', url.origin))
 }

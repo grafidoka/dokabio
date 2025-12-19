@@ -6,49 +6,30 @@ import { supabaseBrowser } from '@/lib/supabase/browser'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
-  const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
-    if (!email) return
-
-    setLoading(true)
-
-    const { error } = await supabaseBrowser.auth.signInWithOtp({
+  const sendLink = async () => {
+    await supabaseBrowser.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: 'https://dokabio.com/api/auth/callback',
+        emailRedirectTo: `${location.origin}/api/auth/callback`,
       },
     })
-
-    setLoading(false)
-
-    if (!error) {
-      setSent(true)
-    } else {
-      alert(error.message)
-    }
+    setSent(true)
   }
 
   return (
-    <div style={{ padding: 40 }}>
+    <div>
       <h1>Giriş Yap</h1>
-
       {sent ? (
         <p>Mail gönderildi. Linke tıkla.</p>
       ) : (
         <>
           <input
-            type="email"
-            placeholder="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="email"
           />
-
-          <br /><br />
-
-          <button onClick={handleLogin} disabled={loading}>
-            {loading ? 'Gönderiliyor…' : 'Link Gönder'}
-          </button>
+          <button onClick={sendLink}>Link Gönder</button>
         </>
       )}
     </div>
