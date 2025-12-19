@@ -1,15 +1,16 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const code = url.searchParams.get('code')
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const code = searchParams.get('code')
 
   if (!code) {
-    return NextResponse.redirect(new URL('/login', url.origin))
+    return NextResponse.redirect(new URL('/login', req.url))
   }
 
+  // 🔴 KRİTİK: cookies() await EDİLİR
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -17,16 +18,25 @@ export async function GET(request: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cookies) =>
-          cookies.forEach((c) =>
-            cookieStore.set(c.name, c.value, c.options)
-          ),
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        },
       },
     }
   )
 
-  await supabase.auth.exchangeCodeForSession(code)
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-  return NextResponse.redirect(new URL('/dashboard/links', url.origin))
+  if (error) {
+    console.error('Auth error:', error.message)
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  // ✅ BAŞARILI LOGIN
+  return NextResponse.redirect(new URL('/dashboard/links', req.url))
 }
