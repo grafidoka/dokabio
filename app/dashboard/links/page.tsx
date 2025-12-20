@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
-import { addLinkAction } from './actions'
+import { addLink } from './actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,21 +10,34 @@ export default async function LinksPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) {
+    return <div>Yetkisiz</div>
+  }
 
   const { data: links } = await supabase
     .from('links')
     .select('*')
     .eq('user_id', user.id)
-    .order('position')
+    .order('id', { ascending: true })
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 24 }}>
       <h1>Linkler</h1>
 
-      <form action={addLinkAction}>
-        <input name="title" placeholder="Başlık" />
-        <input name="url" placeholder="URL" />
+      {/* EKLEME FORMU */}
+      <form action={addLink} style={{ marginBottom: 20 }}>
+        <input
+          name="title"
+          placeholder="Başlık"
+          required
+          style={{ marginRight: 8 }}
+        />
+        <input
+          name="url"
+          placeholder="https://"
+          required
+          style={{ marginRight: 8 }}
+        />
         <button type="submit">Ekle</button>
       </form>
 

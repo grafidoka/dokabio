@@ -1,35 +1,38 @@
 'use server'
 
 import { supabaseServer } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
-export async function addLinkAction(formData: FormData) {
+export async function addLink(formData: FormData) {
   const title = formData.get('title') as string
   const url = formData.get('url') as string
 
   if (!title || !url) {
-    throw new Error('Eksik alan')
+    throw new Error('Title ve URL zorunlu')
   }
 
   const supabase = await supabaseServer()
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    throw new Error('Auth yok')
+  if (userError || !user) {
+    throw new Error('User not authenticated')
   }
 
   const { error } = await supabase.from('links').insert({
-    user_id: user.id,
     title,
     url,
-    position: Date.now(),
+    user_id: user.id,
     is_active: true,
   })
 
   if (error) {
-    console.error(error)
+    console.error('INSERT ERROR:', error)
     throw new Error(error.message)
   }
+
+  revalidatePath('/dashboard/links')
 }
