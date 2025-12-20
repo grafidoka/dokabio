@@ -1,15 +1,15 @@
 import { getSupabaseServer } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import UsernameForm from './UsernameForm'
 
 export default async function UsernamePage() {
   const supabase = await getSupabaseServer()
 
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser()
 
-  if (error || !user) {
+  if (!user) {
     redirect('/login')
   }
 
@@ -19,15 +19,9 @@ export default async function UsernamePage() {
     .eq('id', user.id)
     .single()
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h1>Username</h1>
+  if (profile?.username) {
+    redirect('/dashboard/links')
+  }
 
-      <pre>
-        USER ID: {user.id}
-        {'\n'}
-        USERNAME: {profile?.username ?? 'Yok'}
-      </pre>
-    </div>
-  )
+  return <UsernameForm />
 }
