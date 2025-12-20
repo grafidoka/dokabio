@@ -1,16 +1,25 @@
-import { supabaseServer } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { supabaseServer } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-export default async function DashboardLinksPage() {
+export default async function LinksPage() {
+  // 🔑 MUTLAKA await
   const supabase = await supabaseServer()
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: links } = await supabase
+    .from('links')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('position')
 
   async function addLink(formData: FormData) {
     'use server'
@@ -18,18 +27,22 @@ export default async function DashboardLinksPage() {
     const title = formData.get('title') as string
     const url = formData.get('url') as string
 
+    if (!title || !url) return
+
     const supabase = await supabaseServer()
 
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) redirect('/login')
+    if (!user) {
+      redirect('/login')
+    }
 
     const { error } = await supabase.from('links').insert({
+      user_id: user.id,
       title,
       url,
-      user_id: user.id,
       position: Date.now(),
       is_active: true,
     })
@@ -42,23 +55,17 @@ export default async function DashboardLinksPage() {
     redirect('/dashboard/links')
   }
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('position')
-
   return (
     <div style={{ padding: 40 }}>
       <h1>Linkler</h1>
 
-      <form action={addLink} style={{ display: 'flex', gap: 8 }}>
-        <input name="title" placeholder="Başlık" required />
-        <input name="url" placeholder="URL" required />
+      <form action={addLink}>
+        <input name="title" placeholder="Başlık" />
+        <input name="url" placeholder="URL" />
         <button type="submit">Ekle</button>
       </form>
 
-      <ul style={{ marginTop: 20 }}>
+      <ul>
         {links?.map((link) => (
           <li key={link.id}>
             {link.title} — {link.url}
