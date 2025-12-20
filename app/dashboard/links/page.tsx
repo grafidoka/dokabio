@@ -1,61 +1,36 @@
-import { supabaseServer } from '@/lib/supabase/server'
+import { getSupabaseServer } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function LinksPage() {
-  const supabase = await supabaseServer()
+  const supabase = await getSupabaseServer()
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (authError || !user) {
     redirect('/login')
   }
 
-  const { data: links } = await supabase
+  const { data: links, error } = await supabase
     .from('links')
     .select('*')
-    .order('position')
+    .eq('user_id', user.id)
+    .order('position', { ascending: true })
 
-  async function addLink(formData: FormData) {
-    'use server'
-
-    const title = String(formData.get('title'))
-    const url = String(formData.get('url'))
-
-    const supabase = await supabaseServer()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw new Error('NO USER')
-    }
-
-    await supabase.from('links').insert({
-      user_id: user.id,
-      title,
-      url,
-    })
-
-    redirect('/dashboard/links')
+  if (error) {
+    throw new Error(error.message)
   }
 
   return (
-    <div>
+    <div style={{ padding: 40 }}>
       <h1>Linkler</h1>
 
-      <form action={addLink}>
-        <input name="title" placeholder="Başlık" />
-        <input name="url" placeholder="URL" />
-        <button type="submit">Ekle</button>
-      </form>
-
       <ul>
-        {links?.map((l) => (
-          <li key={l.id}>
-            {l.title} — {l.url}
+        {links?.map((link) => (
+          <li key={link.id}>
+            {link.title} — {link.url}
           </li>
         ))}
       </ul>
