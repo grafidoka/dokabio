@@ -1,26 +1,35 @@
 'use server'
 
 import { supabaseServer } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 
-export async function saveOrder(idsInOrder: string[]) {
+export async function addLinkAction(formData: FormData) {
+  const title = formData.get('title') as string
+  const url = formData.get('url') as string
+
+  if (!title || !url) {
+    throw new Error('Eksik alan')
+  }
+
   const supabase = await supabaseServer()
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) {
+    throw new Error('Auth yok')
+  }
 
-  // sırayı batch güncelle
-  const updates = idsInOrder.map((id, index) => ({
-    id,
-    position: index,
+  const { error } = await supabase.from('links').insert({
     user_id: user.id,
-  }))
-
-  // upsert ile güvenli güncelleme
-  await supabase.from('links').upsert(updates, {
-    onConflict: 'id',
+    title,
+    url,
+    position: Date.now(),
+    is_active: true,
   })
+
+  if (error) {
+    console.error(error)
+    throw new Error(error.message)
+  }
 }
